@@ -38,6 +38,7 @@ covid_data = pd.read_csv("../Data/data_covid.csv")
 columns = list(covid_data["measurement_name"].unique())
 
 
+
 ## Functions to analyze the datasets
 def aggregator(df,option="Mean"):
 	temp_df = df.iloc[:,[0,5,2,6,7,8]]
@@ -67,6 +68,8 @@ def clustering_df(df, option = "PCA", feat1='', feat2=''):
 	if option == "PCA":
 		pca = PCA(random_state=1234, n_components = 2)
 		clustering_df = pca.fit_transform(df)
+		st.markdown("**Explained variance ratio**")
+		st.write("Explained variance ratio for PC1: %s and PC2: %s "%(pca.explained_variance_ratio_[0],pca.explained_variance_ratio_[1]))
 	else:
 		pass
 		clustering_df = df.loc[:,[feat1,feat2]]
@@ -110,7 +113,10 @@ with tab2 :
 	st.caption("Table 2 : Data imputation by  %s\n" %(str.lower(imputation)))
 	st.write("\n")
 	df_cluster = clustering_df(imputed_df, option, feat1, feat2 )
-	st.dataframe(df_cluster.head())
+	if option=="2 Feautures":
+		st.dataframe(df_cluster.head())
+	else:
+		st.dataframe(pd.DataFrame(df_cluster).head())
 	st.caption("Table 3 : Dataframe for clustering")
 	st.write("\n")
 	st.markdown("""<p align = "justify">
@@ -152,28 +158,35 @@ with tab2 :
 	cluster_labels = np.unique(y_km)
 	colormap = matplotlib.cm.get_cmap("Set3").colors[:11]
 	markers = list(Line2D.markers.keys())
+	fig2,ax2= plt.subplots()
 	if option=="2 Feautures":
-		fig2,ax2= plt.subplots()
-		for i in cluster_labels:
-			X = df_cluster.values
-			ax2.scatter(X[y_km == i, 0],
-		            X[y_km == i, 1],
-		            s=50, c=colormap[i],
-		            marker=markers[i], edgecolor='black',
-		            label='Cluster %s'%i)
-		ax2.scatter(km.cluster_centers_[:, 0],
-		            km.cluster_centers_[:, 1],
-		            s=250, marker='*',
-		            c='red', edgecolor='black',
-		            label='Centroids')
+		X = df_cluster.values
+	else:
+		X = df_cluster
+	for i in cluster_labels:
+		ax2.scatter(X[y_km == i, 0],
+	            X[y_km == i, 1],
+	            s=50, c=colormap[i],
+	            marker=markers[i], edgecolor='black',
+	            label='Cluster %s'%i)
+	ax2.scatter(km.cluster_centers_[:, 0],
+	            km.cluster_centers_[:, 1],
+	            s=250, marker='*',
+	            c='red', edgecolor='black',
+	            label='Centroids')
+	if option=="2 Feautures":
 		plt.xlabel(feat1)
 		plt.ylabel(feat2)
-		plt.legend(scatterpoints=1,loc="best")
-		plt.grid()
-		plt.tight_layout()
-		st.pyplot(fig2)
-		st.caption("Figure 2: Clustering")
-		st.write("\n\n")
+	else:
+		plt.xlabel("PC1")
+		plt.ylabel("PC2")
+
+	plt.legend(scatterpoints=1,loc="best")
+	plt.grid()
+	plt.tight_layout()
+	st.pyplot(fig2)
+	st.caption("Figure 2: Clustering")
+	st.write("\n\n")
 
 	# silhouette Plot
 	st.markdown("""<p align = "justify">
@@ -207,9 +220,19 @@ with tab2 :
 	st.write("\n\n")
 
 	# Demographics Table
-	merged_label = pd.merge(imputed_df, pd.DataFrame(y_km, columns=["predicted_label"]), right_index = True, left_index = True )
-	st.write(merged_label)
-	st.caption("Table 4: Demographics Table")
+	data_predicted_labels = pd.merge(df_pivot, pd.DataFrame(y_km, columns=["predicted_label"]), right_index = True, left_index = True )
+	demographics = pd.merge(covid_data.drop_duplicates(subset=["person_id"]).iloc[:,[0,1,2,3,4,5]], data_predicted_labels.iloc[:,[0,-1]], left_on = "person_id", right_on = "person_id", how ="inner")
+	st.dataframe(pd.crosstab(index=demographics['gen_name'], columns=demographics['predicted_label']))
+	st.caption("Table 4 : Gender Based Predicted Cluster Grouping")
+	st.write("\n")
+	st.dataframe(pd.crosstab(index=demographics['race_name'], columns=demographics['predicted_label']))
+	st.caption("Table 5 : Race Based Predicted Cluster Grouping")
+	st.write("\n")
+	demographics["age_group"] = pd.cut(demographics['current_age'],right=True, bins = [0,17,45,65,200], ordered = True)
+	st.dataframe(pd.crosstab(index=demographics['age_group'], columns=demographics['predicted_label']))
+	st.caption("Table 6 : Age Based Predicted Cluster Grouping")
+	st.write("\n")
+
 
 with tab3:
 	pr = df_pivot.profile_report()
