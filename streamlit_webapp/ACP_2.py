@@ -34,7 +34,13 @@ st.write("*Vibhor Gupta*")
 st.write("*2023-03-28*")
 
 #Reading the data file
-covid_data = pd.read_csv("./data_covid.csv")
+data_file = st.file_uploader("Please upload the csv data file")
+
+if data_file is None:
+	covid_data = pd.read_csv("data_covid.csv")
+else:
+	covid_data = pd.read_csv(data_file)
+	
 st.write(covid_data.head())
 columns = list(covid_data["measurement_name"].unique())
 
