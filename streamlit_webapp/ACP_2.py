@@ -244,9 +244,9 @@ with tab2 :
 	st.write("\n")
 
 
-with tab3:
-	pr = df_pivot.profile_report()
-	st_profile_report(pr)
+# with tab3:
+# 	pr = df_pivot.profile_report()
+# 	st_profile_report(pr)
 
 
 
