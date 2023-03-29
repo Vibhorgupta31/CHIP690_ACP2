@@ -35,6 +35,7 @@ st.write("*2023-03-28*")
 
 #Reading the data file
 covid_data = pd.read_csv("data_covid.csv")
+st.write(covid_data.head())
 columns = list(covid_data["measurement_name"].unique())
 
 
@@ -231,6 +232,9 @@ with tab2 :
 	demographics["age_group"] = pd.cut(demographics['current_age'],right=True, bins = [0,17,45,65,200], ordered = True)
 	st.dataframe(pd.crosstab(index=demographics['age_group'], columns=demographics['predicted_label']))
 	st.caption("Table 6 : Age Based Predicted Cluster Grouping")
+	st.write("\n")
+	st.dataframe(pd.crosstab(index=demographics['category'], columns=demographics['predicted_label']))
+	st.caption("Table 6 : Category Based Predicted Cluster Grouping")
 	st.write("\n")
 
 
