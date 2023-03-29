@@ -34,7 +34,7 @@ st.write("*Vibhor Gupta*")
 st.write("*2023-03-28*")
 
 #Reading the data file
-covid_data = pd.read_csv("data_covid.csv")
+covid_data = pd.read_csv("./data_covid.csv")
 st.write(covid_data.head())
 columns = list(covid_data["measurement_name"].unique())
 
