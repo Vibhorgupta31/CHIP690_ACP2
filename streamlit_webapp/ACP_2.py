@@ -40,7 +40,7 @@ st.markdown("""<p align = "justify">
 
 
 #Reading the data file
-covid_data = pd.read_csv("./data_covid.csv")
+covid_data = pd.read_csv("https://raw.githubusercontent.com/Vibhorgupta31/CHIP690_ACP2/main/streamlit_webapp/data_covid.csv")
 columns = list(covid_data["measurement_name"].unique())
 
 
