@@ -102,6 +102,7 @@ st.markdown("""<p align = "justify">
 	</p>""", unsafe_allow_html = True)
 st.dataframe(covid_data.head(25))
 st.caption("Table 1 : Raw data file, provided to write the paper")
+st.write("\n")
 df_pivot = aggregator(covid_data, agg_method)
 st.dataframe(df_pivot.head())
 st.caption("Table 2 : Data aggregated by computing %s" %(str.lower(agg_method)))
