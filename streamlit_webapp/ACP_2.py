@@ -4,8 +4,8 @@ import pandas as pd
 import numpy as np
 import matplotlib
 from matplotlib.lines import Line2D
-import pandas_profiling as pp
-from streamlit_pandas_profiling import st_profile_report
+#import pandas_profiling as pp
+#from streamlit_pandas_profiling import st_profile_report
 
 # ML Library Imports
 from sklearn.experimental import enable_iterative_imputer
@@ -33,15 +33,14 @@ st.markdown("Applied Concept Paper II")
 st.write("*Vibhor Gupta*")
 st.write("*2023-03-28*")
 
-#Reading the data file
-data_file = st.file_uploader("Please upload the csv data file")
+st.markdown("<h4>About</h4>", unsafe_allow_html = True)
+st.markdown("""<p align = "justify">
+	This application was created as an extension of ACP II for the course CHIP690 at UNC Chapel Hill. The purpose of the application is to give user an interactive app to try different means of clustering.
+	""", unsafe_allow_html = True)
 
-if data_file is None:
-	covid_data = pd.read_csv("data_covid.csv")
-else:
-	covid_data = pd.read_csv(data_file)
-	
-st.write(covid_data.head())
+
+#Reading the data file
+covid_data = pd.read_csv("./data_covid.csv")
 columns = list(covid_data["measurement_name"].unique())
 
 
@@ -96,152 +95,144 @@ with st.sidebar :
 
 	num_of_clusters = st.slider("Number of Clusters", 1,10,2)
 
-# Finlal Tabs
-tab1, tab2, tab3 = st.tabs(["ACP", "Cluster Yourself", "Supplementary Data"])
 
-with tab1 :
-	st.markdown("**Introduction**")
-	st.markdown("**Materials**")
-	st.markdown("**Results**")
-	st.markdown("**Discussions**")
-	st.markdown("**References**")
+st.markdown("**Note:** The code works on the default parameters of the standard modules.")
+st.markdown("""<p align = "justify">
+	You can view the data analysis, or can play with the filters on the side bar to explore the clustering on your own.
+	</p>""", unsafe_allow_html = True)
+st.dataframe(covid_data.head(25))
+st.caption("Table 1 : Raw data file, provided to write the paper")
+df_pivot = aggregator(covid_data, agg_method)
+st.dataframe(df_pivot.head())
+st.caption("Table 2 : Data aggregated by computing %s" %(str.lower(agg_method)))
+st.write("\n")
+imputed_df = imputer(df_pivot, imputation)
+st.dataframe(imputed_df.head())
+st.caption("Table 3 : Data imputation by  %s\n" %(str.lower(imputation)))
+st.write("\n")
+df_cluster = clustering_df(imputed_df, option, feat1, feat2 )
+if option=="2 Feautures":
+	st.dataframe(df_cluster.head())
+else:
+	st.dataframe(pd.DataFrame(df_cluster).head())
+st.caption("Table 4 : Dataframe for clustering")
+st.write("\n")
+st.markdown("""<p align = "justify">
+	Let's find the number of clusters, using the default filter settings and find the optimum K for clustering
+	</p>""", unsafe_allow_html = True)
 
-with tab2 :
-	st.markdown("**Note:** The code works on the default parameters of the standard modules.")
-	st.markdown("""<p align = "justify">
-		You can view the data analysis, or can play with the filters on the side bar to explore the clustering on your own.
-		</p>""", unsafe_allow_html = True)
-	df_pivot = aggregator(covid_data, agg_method)
-	st.dataframe(df_pivot.head())
-	st.caption("Table 1 : Data aggregated by computing %s" %(str.lower(agg_method)))
-	st.write("\n")
-	imputed_df = imputer(df_pivot, imputation)
-	st.dataframe(imputed_df.head())
-	st.caption("Table 2 : Data imputation by  %s\n" %(str.lower(imputation)))
-	st.write("\n")
-	df_cluster = clustering_df(imputed_df, option, feat1, feat2 )
-	if option=="2 Feautures":
-		st.dataframe(df_cluster.head())
-	else:
-		st.dataframe(pd.DataFrame(df_cluster).head())
-	st.caption("Table 3 : Dataframe for clustering")
-	st.write("\n")
-	st.markdown("""<p align = "justify">
-		Let's find the number of clusters, using the default filter settings and find the optimum K for clustering
-		</p>""", unsafe_allow_html = True)
+# Elbow Plot
+distortions = []
+for i in range(1, 11):
+    km = KMeans(n_clusters=i, 
+                init='k-means++', 
+                n_init=10, 
+                max_iter=300, 
+                random_state=0)
+    km.fit(df_cluster)
+    distortions.append(km.inertia_)
+fig1, ax1 = plt.subplots()
+ax1.plot(range(1, 11), distortions, marker='o')
+plt.xlabel('Number of clusters')
+plt.ylabel('Distortion')
+plt.tight_layout()
+st.pyplot(fig1)
+st.caption("Figure 1 : Elbow curve")
+st.write("\n\n")
 
-	# Elbow Plot
-	distortions = []
-	for i in range(1, 11):
-	    km = KMeans(n_clusters=i, 
-	                init='k-means++', 
-	                n_init=10, 
-	                max_iter=300, 
-	                random_state=0)
-	    km.fit(df_cluster)
-	    distortions.append(km.inertia_)
-	fig1, ax1 = plt.subplots()
-	ax1.plot(range(1, 11), distortions, marker='o')
-	plt.xlabel('Number of clusters')
-	plt.ylabel('Distortion')
-	plt.tight_layout()
-	st.pyplot(fig1)
-	st.caption("Figure 1 : Elbow curve")
-	st.write("\n\n")
+# Clustering 
+st.markdown("""<p align = "justify">
+	Visualize the clusters
+	</p>""", unsafe_allow_html = True)
+km = KMeans(n_clusters= num_of_clusters, 
+            init='k-means++',
+            n_init=10, 
+            max_iter=300,
+            tol=1e-04,
+            random_state=0)
+y_km = km.fit_predict(df_cluster)
 
-	# Clustering 
-	st.markdown("""<p align = "justify">
-		Visualize the clusters
-		</p>""", unsafe_allow_html = True)
-	km = KMeans(n_clusters= num_of_clusters, 
-	            init='k-means++',
-	            n_init=10, 
-	            max_iter=300,
-	            tol=1e-04,
-	            random_state=0)
-	y_km = km.fit_predict(df_cluster)
+## Visualizing Clusters 
+cluster_labels = np.unique(y_km)
+colormap = matplotlib.cm.get_cmap("Set3").colors[:11]
+markers = list(Line2D.markers.keys())
+fig2,ax2= plt.subplots()
+if option=="2 Feautures":
+	X = df_cluster.values
+else:
+	X = df_cluster
+for i in cluster_labels:
+	ax2.scatter(X[y_km == i, 0],
+            X[y_km == i, 1],
+            s=50, c=colormap[i],
+            marker=markers[i], edgecolor='black',
+            label='Cluster %s'%i)
+ax2.scatter(km.cluster_centers_[:, 0],
+            km.cluster_centers_[:, 1],
+            s=250, marker='*',
+            c='red', edgecolor='black',
+            label='Centroids')
+if option=="2 Feautures":
+	plt.xlabel(feat1)
+	plt.ylabel(feat2)
+else:
+	plt.xlabel("PC1")
+	plt.ylabel("PC2")
 
-	## Visualizing Clusters 
-	cluster_labels = np.unique(y_km)
-	colormap = matplotlib.cm.get_cmap("Set3").colors[:11]
-	markers = list(Line2D.markers.keys())
-	fig2,ax2= plt.subplots()
-	if option=="2 Feautures":
-		X = df_cluster.values
-	else:
-		X = df_cluster
-	for i in cluster_labels:
-		ax2.scatter(X[y_km == i, 0],
-	            X[y_km == i, 1],
-	            s=50, c=colormap[i],
-	            marker=markers[i], edgecolor='black',
-	            label='Cluster %s'%i)
-	ax2.scatter(km.cluster_centers_[:, 0],
-	            km.cluster_centers_[:, 1],
-	            s=250, marker='*',
-	            c='red', edgecolor='black',
-	            label='Centroids')
-	if option=="2 Feautures":
-		plt.xlabel(feat1)
-		plt.ylabel(feat2)
-	else:
-		plt.xlabel("PC1")
-		plt.ylabel("PC2")
+plt.legend(scatterpoints=1,loc="best")
+plt.grid()
+plt.tight_layout()
+st.pyplot(fig2)
+st.caption("Figure 2: Clustering")
+st.write("\n\n")
 
-	plt.legend(scatterpoints=1,loc="best")
-	plt.grid()
-	plt.tight_layout()
-	st.pyplot(fig2)
-	st.caption("Figure 2: Clustering")
-	st.write("\n\n")
+# silhouette Plot
+st.markdown("""<p align = "justify">
+	Check the quality of the clusters using the silhouette plot
+	</p>""", unsafe_allow_html = True)
+cluster_labels = np.unique(y_km)
+n_clusters = cluster_labels.shape[0]
+silhouette_vals = silhouette_samples(df_cluster, y_km, metric='euclidean')
+y_ax_lower, y_ax_upper = 0, 0
+yticks = []
+fig3, ax3 = plt.subplots()
+for i, c in enumerate(cluster_labels):
+    c_silhouette_vals = silhouette_vals[y_km == c]
+    c_silhouette_vals.sort()
+    y_ax_upper += len(c_silhouette_vals)
+    color = cm.jet(float(i) / n_clusters)
+    ax3.barh(range(y_ax_lower, y_ax_upper), c_silhouette_vals, height=1.0, 
+             edgecolor='none', color=color)
 
-	# silhouette Plot
-	st.markdown("""<p align = "justify">
-		Check the quality of the clusters using the silhouette plot
-		</p>""", unsafe_allow_html = True)
-	cluster_labels = np.unique(y_km)
-	n_clusters = cluster_labels.shape[0]
-	silhouette_vals = silhouette_samples(df_cluster, y_km, metric='euclidean')
-	y_ax_lower, y_ax_upper = 0, 0
-	yticks = []
-	fig3, ax3 = plt.subplots()
-	for i, c in enumerate(cluster_labels):
-	    c_silhouette_vals = silhouette_vals[y_km == c]
-	    c_silhouette_vals.sort()
-	    y_ax_upper += len(c_silhouette_vals)
-	    color = cm.jet(float(i) / n_clusters)
-	    ax3.barh(range(y_ax_lower, y_ax_upper), c_silhouette_vals, height=1.0, 
-	             edgecolor='none', color=color)
+    yticks.append((y_ax_lower + y_ax_upper) / 2.)
+    y_ax_lower += len(c_silhouette_vals)
+    
+silhouette_avg = np.mean(silhouette_vals)
+plt.axvline(silhouette_avg, color="red", linestyle="--") 
+plt.yticks(yticks, cluster_labels + 1)
+plt.ylabel('Cluster')
+plt.xlabel('Silhouette coefficient')
+plt.tight_layout()
+st.pyplot(fig3)
+st.caption("Figure 3: Silhouette Plot")
+st.write("\n\n")
 
-	    yticks.append((y_ax_lower + y_ax_upper) / 2.)
-	    y_ax_lower += len(c_silhouette_vals)
-	    
-	silhouette_avg = np.mean(silhouette_vals)
-	plt.axvline(silhouette_avg, color="red", linestyle="--") 
-	plt.yticks(yticks, cluster_labels + 1)
-	plt.ylabel('Cluster')
-	plt.xlabel('Silhouette coefficient')
-	plt.tight_layout()
-	st.pyplot(fig3)
-	st.caption("Figure 3: Silhouette Plot")
-	st.write("\n\n")
-
-	# Demographics Table
-	data_predicted_labels = pd.merge(df_pivot, pd.DataFrame(y_km, columns=["predicted_label"]), right_index = True, left_index = True )
-	demographics = pd.merge(covid_data.drop_duplicates(subset=["person_id"]).iloc[:,[0,1,2,3,4,5]], data_predicted_labels.iloc[:,[0,-1]], left_on = "person_id", right_on = "person_id", how ="inner")
-	st.dataframe(pd.crosstab(index=demographics['gen_name'], columns=demographics['predicted_label']))
-	st.caption("Table 4 : Gender Based Predicted Cluster Grouping")
-	st.write("\n")
-	st.dataframe(pd.crosstab(index=demographics['race_name'], columns=demographics['predicted_label']))
-	st.caption("Table 5 : Race Based Predicted Cluster Grouping")
-	st.write("\n")
-	demographics["age_group"] = pd.cut(demographics['current_age'],right=True, bins = [0,17,45,65,200], ordered = True)
-	st.dataframe(pd.crosstab(index=demographics['age_group'], columns=demographics['predicted_label']))
-	st.caption("Table 6 : Age Based Predicted Cluster Grouping")
-	st.write("\n")
-	st.dataframe(pd.crosstab(index=demographics['category'], columns=demographics['predicted_label']))
-	st.caption("Table 6 : Category Based Predicted Cluster Grouping")
-	st.write("\n")
+# Demographics Table
+data_predicted_labels = pd.merge(df_pivot, pd.DataFrame(y_km, columns=["predicted_label"]), right_index = True, left_index = True )
+demographics = pd.merge(covid_data.drop_duplicates(subset=["person_id"]).iloc[:,[0,1,2,3,4,5]], data_predicted_labels.iloc[:,[0,-1]], left_on = "person_id", right_on = "person_id", how ="inner")
+st.dataframe(pd.crosstab(index=demographics['gen_name'], columns=demographics['predicted_label']))
+st.caption("Table 5 : Gender Based Predicted Cluster Grouping")
+st.write("\n")
+st.dataframe(pd.crosstab(index=demographics['race_name'], columns=demographics['predicted_label']))
+st.caption("Table 6 : Race Based Predicted Cluster Grouping")
+st.write("\n")
+demographics["age_group"] = pd.cut(demographics['current_age'],right=True, bins = [0,17,45,65,200], ordered = True)
+st.dataframe(pd.crosstab(index=demographics['age_group'], columns=demographics['predicted_label']))
+st.caption("Table 7 : Age Based Predicted Cluster Grouping")
+st.write("\n")
+st.dataframe(pd.crosstab(index=demographics['category'], columns=demographics['predicted_label']))
+st.caption("Table 8 : Category Based Predicted Cluster Grouping")
+st.write("\n")
 
 
 # with tab3:
