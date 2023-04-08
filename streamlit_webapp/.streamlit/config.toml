@@ -38,8 +38,8 @@
 # Default: true
 # displayEnabled = true
 
-# Controls whether uncaught app exceptions and deprecation warnings are displayed in the browser. By default, this is set to True and Streamlit displays app exceptions and associated tracebacks, and deprecation warnings, in the browser.
-# If set to False, an exception or deprecation warning will result in a generic message being shown in the browser, and exceptions, tracebacks, and deprecation warnings will be printed to the console only.
+# Controls whether uncaught app exceptions are displayed in the browser. By default, this is set to True and Streamlit displays app exceptions and associated tracebacks in the browser.
+# If set to False, an exception will result in a generic message being shown in the browser, and exceptions and tracebacks will be printed to the console only.
 # Default: true
 # showErrorDetails = true
 
@@ -62,9 +62,9 @@
 # Default: true
 # postScriptGC = true
 
-# Handle script rerun requests immediately, rather than waiting for script execution to reach a yield point. This makes Streamlit much more responsive to user interaction, but it can lead to race conditions in apps that mutate session_state data outside of explicit session_state assignment statements.
-# Default: true
-# fastReruns = true
+# Handle script rerun requests immediately, rather than waiting for script execution to reach a yield point. Enabling this will make Streamlit much more responsive to user interaction, but it can lead to race conditions in apps that mutate session_state data outside of explicit session_state assignment statements.
+# Default: false
+# fastReruns = false
 
 
 [server]
@@ -82,7 +82,7 @@
 
 # Symmetric key used to produce signed cookies. If deploying on multiple replicas, this should be set to the same value across all replicas to ensure they all share the same secret.
 # Default: randomly generated secret key.
-# cookieSecret = "4c6d70b129198300e68de53430ab83b1e8c273fb1ccfb5c0b78ccfc0f574bae9"
+# cookieSecret = "076d7a7651df2b14cc3392752377bc976ce5de040e662b91339243ca13d5619c"
 
 # If false, will attempt to open a browser window on start.
 # Default: false unless (1) we are on a Linux box where DISPLAY is unset, or (2) we are running in the Streamlit Atom plugin.
@@ -104,7 +104,7 @@
 # Default: ""
 # baseUrlPath = ""
 
-# Enables support for Cross-Origin Resource Sharing (CORS) protection, for added security.
+# Enables support for Cross-Origin Request Sharing (CORS) protection, for added security.
 # Due to conflicts between CORS and XSRF, if `server.enableXsrfProtection` is on and `server.enableCORS` is off at the same time, we will prioritize `server.enableXsrfProtection`.
 # Default: true
 # enableCORS = true
@@ -125,18 +125,6 @@
 # Enables support for websocket compression.
 # Default: false
 # enableWebsocketCompression = false
-
-# Enable serving files from a `static` directory in the running app's directory.
-# Default: false
-# enableStaticServing = false
-
-# Server certificate file for connecting via HTTPS. Must be set at the same time as "server.sslKeyFile".
-# ['DO NOT USE THIS OPTION IN A PRODUCTION ENVIRONMENT. It has not gone through security audits or performance tests. For the production environment, we recommend performing SSL termination by the load balancer or the reverse proxy.']
-# sslCertFile =
-
-# Cryptographic key file for connecting via HTTPS. Must be set at the same time as "server.sslCertFile".
-# ['DO NOT USE THIS OPTION IN A PRODUCTION ENVIRONMENT. It has not gone through security audits or performance tests. For the production environment, we recommend performing SSL termination by the load balancer or the reverse proxy.']
-# sslKeyFile =
 
 
 [browser]
@@ -177,7 +165,7 @@
 [theme]
 
 # The preset Streamlit theme that your custom theme inherits from. One of "light" or "dark".
-base = "light"
+base = "dark"
 
 # Primary accent color for interactive elements.
 primaryColor = "#7BAFD4"
@@ -192,5 +180,4 @@ primaryColor = "#7BAFD4"
 # textColor =
 
 # Font family for all text in the app, except code blocks. One of "sans serif", "serif", or "monospace".
-# font = "monospace"
-
+font = "monospace"
